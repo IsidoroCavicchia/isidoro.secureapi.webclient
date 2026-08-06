@@ -3,6 +3,8 @@ import { SidebarModule  } from "primeng/sidebar";
 import { PIcon } from '@primeicons/angular/p-icon';
 import { RouterOutlet } from "@angular/router";
 import { SidebarCollapsible } from 'primeng/types/sidebar';
+import { ButtonModule } from "primeng/button";
+import { AvatarModule } from "primeng/avatar";
 
 interface NavItem {
     icon: string;
@@ -19,7 +21,7 @@ interface NavGroup {
 
 @Component({
   selector: 'app-sidebar',
-  imports: [SidebarModule, PIcon, RouterOutlet],
+  imports: [SidebarModule, PIcon, RouterOutlet, AvatarModule, ButtonModule],
   template: `
     <p-sidebar-layout class="relative!">
         <p-sidebar id="sidebar" variant="floating" [collapsible]="collapsible" showCloseIcon="true" [(open)]="open">
@@ -56,6 +58,16 @@ interface NavGroup {
                             </p-sidebar-group>
                         }
                     </p-sidebar-content>
+                    <p-sidebar-footer>
+                        <p-sidebar-menu>
+                            <p-sidebar-menu-item>
+                                <button pSidebarMenuButton class="p-1!">
+                                    <p-avatar label="JD" shape="circle" class="size-6 shrink-0 text-xs" />
+                                        <span>John Doe</span>
+                                </button>
+                            </p-sidebar-menu-item>
+                        </p-sidebar-menu>
+                    </p-sidebar-footer>
                 </p-sidebar-panel>
             </p-sidebar-aside>
         </p-sidebar>
