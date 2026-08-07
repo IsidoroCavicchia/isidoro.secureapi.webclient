@@ -1,0 +1,37 @@
+<div class="flex justify-center">
+    <p-card class="max-w-sm w-full" header="Modifier {{user()?.username}}">
+        <div class="flex justify-center mb-6">
+            <div class="relative inline-block">
+                <img
+                    [src]="user()?.image || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2Ku7gWwNnLD6RdGGhEqzOjB-bK2jY2q4l15cVvpi4i-an0yPZQHoefBpD&s=10'"
+                    alt="Photo de profil"
+                    class="size-24 rounded-full object-cover"
+                />
+                <button
+                    type="button"
+                    (click)="fileInput.click()"
+                    class="absolute bottom-0 right-0 flex size-7 items-center justify-center rounded-full bg-primary text-white shadow-md cursor-pointer border-1 border-surface-0"
+                    aria-label="Changer la photo de profil"
+                >
+                    <i class="pi pi-pencil text-xs"></i>
+                </button>
+                <input
+                    #fileInput
+                    type="file"
+                    accept="image/*"
+                    class="hidden"
+                    (change)="onPhotoSelected($event)"
+                />
+            </div>
+        </div>
+        <form class="space-y-6 mt-3" [formGroup]="updateUserForm" (ngSubmit)="onSubmit()">
+            <div class="flex flex-col gap-2">
+                <label pLabel for="username">Username</label>
+                <input pInputText id="username" type="text" name="username" [formControl]="usernameFormControl" />
+            </div>
+            <div class="flex flex-col gap-4 mt-6">
+                <button type="submit" pButton class="w-full">Enregistrer</button>
+            </div>
+        </form>
+    </p-card>
+</div>

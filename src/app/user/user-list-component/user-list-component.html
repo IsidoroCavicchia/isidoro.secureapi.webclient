@@ -1,0 +1,91 @@
+<p-dialog
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [closable]="true"
+  header="Réinitialiser le mot de passe"
+  [style]="{ width: '400px' }"
+  aria-labelledby="reset-password-dialog-title">
+
+  <form [formGroup]="passwordForm" (ngSubmit)="onSubmitPassword()" id="reset-password-form">
+    <div class="flex flex-col gap-4 pt-2">
+      <div class="flex flex-col gap-1">
+        <label for="newPassword">Nouveau mot de passe</label>
+        <input
+          pInputText
+          id="newPassword"
+          type="password"
+          formControlName="newPassword"
+          autocomplete="new-password"
+          [class]="'w-full' + (passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched ? ' ng-invalid ng-dirty' : '')" />
+        @if (passwordForm.get('newPassword')?.hasError('required') && passwordForm.get('newPassword')?.touched) {
+          <small class="text-red-500">Ce champ est requis.</small>
+        }
+        @if (passwordForm.get('newPassword')?.hasError('minlength') && passwordForm.get('newPassword')?.touched) {
+          <small class="text-red-500">Minimum 6 caractères.</small>
+        }
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label for="confirmPassword">Confirmer le mot de passe</label>
+        <input
+          pInputText
+          id="confirmPassword"
+          type="password"
+          formControlName="confirmPassword"
+          autocomplete="new-password"
+          [class]="'w-full' + ((passwordForm.get('confirmPassword')?.touched && passwordForm.hasError('passwordsMismatch')) ? ' ng-invalid ng-dirty' : '')" >
+        @if (passwordForm.get('confirmPassword')?.touched && passwordForm.hasError('passwordsMismatch')) {
+          <small class="text-red-500">Les mots de passe ne correspondent pas.</small>
+        }
+      </div>
+    </div>
+  </form>
+
+  <ng-template #footer>
+    <button pButton type="button" label="Annuler" severity="secondary" (click)="dialogVisible.set(false)"><span>Annuler</span></button>
+    <button pButton type="submit" form="reset-password-form" label="Confirmer"><span>Confirmer</span></button>
+  </ng-template>
+</p-dialog>
+
+<div class="flex justify-between items-center mb-3">
+    <h2 class="m-3">Liste des utilisateurs</h2>
+    <a pButton label="Ajouter" (click)="onAdd()"><span class="pi pi-plus"
+            routerLink="user/create"></span><span>Ajouter</span></a>
+</div>
+
+<p-card>
+    <p-table [value]="users()" stripedRows [tableStyle]="{ 'min-width': '50rem'}">
+        <ng-template #header>
+            <tr>
+                <th>Name</th>
+                <th>LastConnect</th>
+                <th>Action</th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-user>
+            <tr>
+                <td>
+                    <div class="flex items-center gap-2">
+                        <p-avatar style="width: 30px;" shape="circle"
+                            [image]="user.image || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2Ku7gWwNnLD6RdGGhEqzOjB-bK2jY2q4l15cVvpi4i-an0yPZQHoefBpD&s=10'" />
+                        <span class="text-sm">{{ user.username }}</span>
+                    </div>
+                </td>
+                <td>{{ user.lastConnect | date: 'dd/MM/yyyy'}}</td>
+                <td>
+                    <button pButton type="button"
+                        class="pi p-button-text p-button-secondary !font-bold border-0 bg-transparent cursor-pointer"
+                        (click)="onEdit(user)">
+                        <span class="p-button-icon pi pi-pencil"></span>
+                    </button>
+                    <button pButton type="button"
+                        class="pi p-button-text p-button-secondary !font-bold border-0 bg-transparent cursor-pointer"
+                        (click)="resetPassword(user)">
+                        <span class="p-button-icon pi pi-key"></span>
+                    </button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-card>

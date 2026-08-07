@@ -1,15 +1,10 @@
-import { Component, signal, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ButtonDirective } from 'primeng/button';
-import { SideBarComponent } from '../theme/sidebar.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ButtonDirective, SideBarComponent],
-  templateUrl: './app.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
-  styleUrl: './app.css',
+  imports: [RouterOutlet],
+  template: '<router-outlet />',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class App {
-  protected readonly title = signal('isidoro.secureapi.webclient');
-}
+export class App {}

@@ -1,17 +1,21 @@
-import { Component, signal } from "@angular/core";
+import { Component, computed, inject, signal } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
 import { SidebarModule  } from "primeng/sidebar";
 import { PIcon } from '@primeicons/angular/p-icon';
-import { RouterOutlet } from "@angular/router";
+import { NavigationEnd, Router, RouterOutlet } from "@angular/router";
 import { SidebarCollapsible } from 'primeng/types/sidebar';
 import { ButtonModule } from "primeng/button";
 import { AvatarModule } from "primeng/avatar";
+import { filter, map } from "rxjs";
+import { AuthService } from "../services/auth.service";
 
 interface NavItem {
     icon: string;
     label: string;
-    isActive?: boolean;
+    route?: string;
     badge?: string;
-    subItems?: { label: string; isActive?: boolean }[];
+    subItems?: { label: string; route?: string }[];
+    command?: () => void;
 }
 
 interface NavGroup {
@@ -45,7 +49,7 @@ interface NavGroup {
                                 <p-sidebar-group-content>
                                     @for (item of group.items; track item.label){
                                         <p-sidebar-menu-item [collapsible]="!!item.subItems" [defaultOpen]="hasActiveSub(item)">
-                                            <button pSidebarMenuButton [isActive]="!!item.isActive">
+                                            <button pSidebarMenuButton [isActive]="isItemActive(item)" (click)="item.command?.()">
                                                 <svg [pIcon]="item.icon"></svg>
                                                 <span>{{item.label}}</span>
                                                 @if (item.subItems){
@@ -62,8 +66,11 @@ interface NavGroup {
                         <p-sidebar-menu>
                             <p-sidebar-menu-item>
                                 <button pSidebarMenuButton class="p-1!">
-                                    <p-avatar label="JD" shape="circle" class="size-6 shrink-0 text-xs" />
-                                        <span>John Doe</span>
+                                    <p-avatar [label]="userInitials()" shape="circle" class="size-6 shrink-0 text-xs" />
+                                    <span>{{ authService.currentUser() }}</span>
+                                </button>
+                                <button pSidebarMenuAction (click)="authService.logout()" aria-label="Se déconnecter">
+                                    <svg data-p-icon="sign-out"></svg>
                                 </button>
                             </p-sidebar-menu-item>
                         </p-sidebar-menu>
@@ -82,24 +89,43 @@ interface NavGroup {
 export class SideBarComponent {
     collapsible: SidebarCollapsible = 'icon';
     open = signal(true);
+    readonly router = inject(Router);
+    readonly authService = inject(AuthService);
+
+    readonly userInitials = computed(() =>
+        (this.authService.currentUser() ?? '').slice(0, 2).toUpperCase()
+    );
+
+    private readonly currentUrl = toSignal(
+        this.router.events.pipe(
+            filter((e) => e instanceof NavigationEnd),
+            map((e) => (e as NavigationEnd).urlAfterRedirects)
+        ),
+        { initialValue: this.router.url }
+    );
 
     navGroups: NavGroup[] = [
         {
             label: 'Home',
             items: [
-                { icon: 'home', label: 'Dashboard', isActive: true },
+                { icon: 'home', label: 'Dashboard', route: '/', command: () => this.router.navigate(['/']) },
             ]
         },
         {
             label: 'Sécurité',
             items: [
-                { icon: 'user', label: 'Utilisateurs' },
-                { icon: 'globe', label: 'Applications' },
+                { icon: 'user', label: 'Utilisateurs', route: '/user', command: () => this.router.navigate(['/user']) },
+                { icon: 'globe', label: 'Applications', route: '/applications', command: () => this.router.navigate(['/applications']) },
             ]
         }
     ];
 
+    isItemActive(item: NavItem): boolean {
+        const url = this.currentUrl();
+        return item.route ? url === item.route || url.startsWith(item.route + '/') : false;
+    }
+
     hasActiveSub(item: NavItem): boolean {
-        return !!item.subItems?.some((s) => s.isActive);
+        return !!item.subItems?.some((s) => s.route && this.currentUrl().startsWith(s.route));
     }
 }
