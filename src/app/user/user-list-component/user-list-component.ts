@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
+import { ToolbarModule } from 'primeng/toolbar';
 import { UserService } from '../../../services/user.service';
 import { GetUserRequest, GetUserResponse, ResetPasswordRequest } from '../../../models/user.model';
 import { CardModule } from 'primeng/card';
 import { AvatarModule } from 'primeng/avatar';
+import { DatePickerModule } from 'primeng/datepicker';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -22,10 +24,22 @@ function passwordsMatchValidator(control: AbstractControl): ValidationErrors | n
 
 @Component({
   selector: 'app-user-list-component',
-  imports: [TableModule, CardModule, AvatarModule, DatePipe, ButtonModule, DialogModule, InputTextModule, ReactiveFormsModule, ToastModule],
+  imports: [TableModule,
+    CardModule,
+    AvatarModule,
+    DatePipe,
+    ButtonModule,
+    DialogModule,
+    InputTextModule,
+    ReactiveFormsModule,
+    ToastModule,
+    ToolbarModule,
+    FormsModule,
+    DatePickerModule
+  ],
   providers: [MessageService],
   templateUrl: './user-list-component.html',
-  styleUrl: './user-list-component.css',
+  styleUrls: ['./user-list-component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserListComponent implements OnInit {
@@ -34,6 +48,7 @@ export class UserListComponent implements OnInit {
   protected readonly users = this.userService.users;
   protected readonly dialogVisible = signal(false);
   protected readonly selectedUser = signal<GetUserResponse | null>(null);
+  private request: GetUserRequest = {};
 
   protected readonly passwordForm = new FormGroup(
     {
@@ -43,9 +58,11 @@ export class UserListComponent implements OnInit {
     { validators: passwordsMatchValidator }
   );
 
+  username: string = '';
+  selectedCreatedDate: Date[] | null = null;
+
   ngOnInit(): void {
-    const request: GetUserRequest = {};
-    this.userService.getUsers(request).subscribe((response) => {
+    this.userService.getUsers(this.request).subscribe((response) => {
       this.userService.users.set(response.body || []);
     });
   }
@@ -71,12 +88,45 @@ export class UserListComponent implements OnInit {
     }
     const user = this.selectedUser();
     if (!user) return;
-    var newPassword : ResetPasswordRequest = {
+    var newPassword: ResetPasswordRequest = {
       id: user.id,
       newPassword: this.passwordForm.value.newPassword!,
     };
     this.userService.resetPassword(newPassword).subscribe(() => {
       this.dialogVisible.set(false);
     });
+  }
+
+  onSearch(): void {
+    if (this.username.length >= 3){
+      this.request.username = this.username;
+      this.userService.getUsers(this.request).subscribe((response) => {
+        this.userService.users.set(response.body || []);
+      });
+    } else {
+      if (this.username.length === 0) {
+        this.request.username = undefined;
+        this.userService.getUsers(this.request).subscribe((response) => {
+          this.userService.users.set(response.body || []);
+        });
+      }
+    }
+  }
+
+  selectCreatedDate() {
+    const range = this.selectedCreatedDate;
+    const dateMin = range?.[0] ?? null;
+    const dateMax = range?.[1] ?? new Date();
+
+    this.request.lastConnectBeginAt = dateMin ?? undefined;
+    this.request.lastConnectEndAt = dateMax ?? undefined;
+
+    // Only refresh when the range is cleared or both dates are selected
+    const isCleared = !range || range.every((d: Date | null) => d == null);
+    if (isCleared || dateMax) {
+      this.userService.getUsers(this.request).subscribe((response) => {
+        this.userService.users.set(response.body || []);
+      });
+    }
   }
 }
