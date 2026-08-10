@@ -10,6 +10,8 @@ import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { Router } from '@angular/router';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
   const group = control as FormGroup;
@@ -20,8 +22,8 @@ function passwordsMatchValidator(control: AbstractControl): ValidationErrors | n
 
 @Component({
   selector: 'app-user-list-component',
-  imports: [TableModule, CardModule, AvatarModule, DatePipe, ButtonModule, DialogModule, InputTextModule, ReactiveFormsModule],
-  providers: [],
+  imports: [TableModule, CardModule, AvatarModule, DatePipe, ButtonModule, DialogModule, InputTextModule, ReactiveFormsModule, ToastModule],
+  providers: [MessageService],
   templateUrl: './user-list-component.html',
   styleUrl: './user-list-component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,7 +50,9 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  protected onAdd(): void {}
+  protected onAdd(): void {
+    this.router.navigate(['/user/create']);
+  }
 
   protected onEdit(user: GetUserResponse): void {
     this.router.navigate(['/user', user.id]);

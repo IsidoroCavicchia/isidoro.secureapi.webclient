@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, signal } from "@angular/core";
 import { environment } from "../environments/environment";
-import { GetLoginResponse, GetUserRequest, GetUserResponse, ResetPasswordRequest } from "../models/user.model";
+import { GetLoginResponse, GetUserRequest, GetUserResponse, CreateUserRequest, ResetPasswordRequest } from "../models/user.model";
 
 @Injectable({
     providedIn: 'root'
@@ -33,5 +33,12 @@ export class UserService {
 
     resetPassword(request: ResetPasswordRequest){
         return this.http.patch(environment.apiUrl + '/api/Account/reset-password', request);
+    }
+
+    registerUser(request: CreateUserRequest){
+        const params = Object.fromEntries(
+            Object.entries(request).filter(([, v]) => v !== undefined && v !== null)
+        )
+        return this.http.post(environment.apiUrl + '/api/Account/register?Username=' + request.username + '&Password=' + request.password, {});
     }
 }

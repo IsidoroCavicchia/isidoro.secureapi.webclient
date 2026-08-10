@@ -29,3 +29,8 @@ export interface ResetPasswordRequest{
     id: string;
     newPassword: string;
 }
+
+export interface CreateUserRequest{
+    username: string;
+    password: string;
+}
