@@ -16,8 +16,8 @@ export const routes: Routes = [
         children: [
             { path: '', component: Home },
             { path: 'user', component: UserListComponent },
-            { path: 'user/:id', component: UpdateUserComponent },
-            { path: 'user/create', component: CreateUserComponent }
+            { path: 'user/create', component: CreateUserComponent },
+            { path: 'user/:id', component: UpdateUserComponent }
         ]
     },
     { path: '**', redirectTo: '' }
