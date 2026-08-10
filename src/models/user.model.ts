@@ -9,7 +9,7 @@ export interface GetUserRequest{
     id?: string;
     username?: string;
     lastConnectBeginAt?: Date;
-    LastConnectEndAt?: Date;
+    lastConnectEndAt?: Date;
 }
 
 export interface GetUserResponse{

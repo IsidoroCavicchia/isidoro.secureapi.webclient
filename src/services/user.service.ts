@@ -13,10 +13,22 @@ export class UserService {
     constructor(private readonly http: HttpClient){}
 
     getUsers(request: GetUserRequest){
-        const params = Object.fromEntries(
-            Object.entries(request).filter(([, v]) => v !== undefined && v !== null)
-        )
-        return this.http.get<GetUserResponse[]>(environment.apiUrl + '/api/Account', { params, observe: 'response' });
+        return this.http.get<GetUserResponse[]>(environment.apiUrl + '/api/Account', {
+            params: Object.fromEntries(
+                Object.entries(request)
+                    .filter(([, v]) => v !== undefined && v !== null)
+                    .map(([k, v]) => {
+                        if (v instanceof Date) {
+                            const y = v.getFullYear();
+                            const m = String(v.getMonth() + 1).padStart(2, '0');
+                            const d = String(v.getDate()).padStart(2, '0');
+                            return [k, `${y}-${m}-${d}`];
+                        }
+                        return [k, v];
+                    })
+            ),
+            observe: 'response'
+        });
     }
 
     getUser(id: string){
