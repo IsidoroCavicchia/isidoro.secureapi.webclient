@@ -6,6 +6,7 @@ import { SideBarComponent } from '../theme/sidebar.component';
 import { authGuard } from './guards/auth.guard';
 import { CreateUserComponent } from './user/create-user-component/create-user-component';
 import { UpdateUserComponent } from './user/update-user-component/update-user-component';
+import { ListApplicationComponent } from './application/list-application-component/list-application-component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
@@ -17,8 +18,9 @@ export const routes: Routes = [
             { path: '', component: Home },
             { path: 'user', component: UserListComponent },
             { path: 'user/create', component: CreateUserComponent },
-            { path: 'user/:id', component: UpdateUserComponent }
-        ]
+            { path: 'user/:id', component: UpdateUserComponent },
+            { path: 'application', component: ListApplicationComponent },
+        ],
     },
     { path: '**', redirectTo: '' }
 ];

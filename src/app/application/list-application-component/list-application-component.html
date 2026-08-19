@@ -1,0 +1,77 @@
+<p-dialog [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)" [modal]="true" [closable]="true"
+    header="Ajouter une application" [style]="{ width: '400px' }" aria-labelledby="add-application-dialog-title">
+    <form id="add-application-form">
+        <div class="flex flex-col gap-4 pt-2">
+            <div class="flex flex-col gap-1">
+                <label for="applicationName">Nom de l'application</label> 
+                <input pInputText id="applicationName" type="text" formControlName="applicationName" autocomplete="off" />
+            </div>
+        </div>
+        <div class="flex flex-col gap-4 pt-2">
+            <div class="flex flex-col gap-1">
+                <label for="applicationDomain">Nom de domain</label> 
+                <input pInputText id="applicationDomain" type="text" formControlName="applicationDomain" autocomplete="off"/>
+            </div>
+        </div>
+        <div class="flex flex-col gap-4 pt-2">
+            <div class="flex flex-col gap-1">
+                <label for="applicationDescription">Description</label>
+                <textarea pInputTextarea id="applicationDescription" formControlName="applicationDescription" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="flex flex-col gap-4 pt-2">
+            <div class="flex flex-col gap-1">
+                <label for="applicationIsActive">Is Active</label>
+                <p-toggleswitch id="applicationIsActive" formControlName="applicationIsActive" binary="true"></p-toggleswitch>
+            </div>
+        </div>
+    </form>
+
+      <ng-template #footer>
+    <button pButton type="button" label="Annuler" severity="secondary"
+      (click)="dialogVisible.set(false)"><span>Annuler</span></button>
+    <button pButton type="submit" form="add-application-form" label="Confirmer"><span>Confirmer</span></button>
+  </ng-template>
+</p-dialog>
+
+<div class="flex justify-between items-center mb-3">
+    <h2 class="m-3">Liste des applications</h2>
+    <a pButton label="Ajouter" (click)="addApplication()"><span class="pi pi-plus"></span><span>Ajouter</span></a>
+</div>
+<p-toolbar>
+    <div class="grow grid grid-cols-12 gap-4">
+        <div class="lg:col-span-4 col-span-5">
+            <input pInputText type="text" placeholder="Nom de l'application" [(ngModel)]="applicationName"
+                class="w-full" />
+        </div>
+        <div class="lg:col-span-4 col-span-5">
+            <input pInputText type="text" placeholder="Nom de domain" [(ngModel)]="applicationDomain"
+                class="w-full" />
+        </div>
+    </div>
+</p-toolbar>
+<p-card>
+    <p-table [value]="applications" stripedRows [tableStyle]="{ 'min-width': '50rem'}">
+        <ng-template #header>
+            <tr>
+                <th>Nom</th>
+                <th>Domain</th>
+                <th>Description</th>
+                <th>Is Active</th>
+                <th>Action</th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-application>
+            <tr>
+                <td>{{application.name}}</td>
+                <td>{{application.domain}}</td>
+                <td>{{application.description}}</td>
+                <td>{{application.isActive}}</td>
+                <td>
+                    <button pButton type="button" icon="pi pi-pencil" class="p-button-rounded p-button-success p-mr-2"></button>
+                    <button pButton type="button" icon="pi pi-trash" class="p-button-rounded p-button-danger"></button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-card>

@@ -17,12 +17,14 @@ export interface GetUserResponse{
     username: string;
     lastConnect: Date;
     image?: string;
+    email?: string;
 }
 
 export interface UpdateUserRequest{
     username: string;
     password: string;
-    image: string;
+    image?: string;
+    email?: string;
 }
 
 export interface ResetPasswordRequest{
@@ -31,6 +33,7 @@ export interface ResetPasswordRequest{
 }
 
 export interface CreateUserRequest{
-    username: string;
+    username?: string;
     password: string;
+    email?: string;
 }
