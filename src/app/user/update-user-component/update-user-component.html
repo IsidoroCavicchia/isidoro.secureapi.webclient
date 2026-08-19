@@ -1,9 +1,10 @@
+<p-toast/>
 <div class="flex justify-center">
-    <p-card class="max-w-sm w-full" header="Modifier {{user()?.username}}">
+    <p-card class="max-w-sm w-full" header="Modifier {{user?.username}}">
         <div class="flex justify-center mb-6">
             <div class="relative inline-block">
                 <img
-                    [src]="user()?.image || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2Ku7gWwNnLD6RdGGhEqzOjB-bK2jY2q4l15cVvpi4i-an0yPZQHoefBpD&s=10'"
+                    [src]="imageUrl() || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2Ku7gWwNnLD6RdGGhEqzOjB-bK2jY2q4l15cVvpi4i-an0yPZQHoefBpD&s=10'"
                     alt="Photo de profil"
                     class="size-24 rounded-full object-cover"
                 />
@@ -28,6 +29,10 @@
             <div class="flex flex-col gap-2">
                 <label pLabel for="username">Username</label>
                 <input pInputText id="username" type="text" name="username" [formControl]="usernameFormControl" />
+            </div>
+            <div class="flex flex-col gap-2">
+                <label pLabel for="email">Email</label>
+                <input pInputText id="email" type="email" name="email" [formControl]="emailFormControl" />
             </div>
             <div class="flex flex-col gap-4 mt-6">
                 <button type="submit" pButton class="w-full">Enregistrer</button>

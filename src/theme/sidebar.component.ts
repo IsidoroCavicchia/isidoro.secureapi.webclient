@@ -115,7 +115,7 @@ export class SideBarComponent {
             label: 'Sécurité',
             items: [
                 { icon: 'user', label: 'Utilisateurs', route: '/user', command: () => this.router.navigate(['/user']) },
-                { icon: 'globe', label: 'Applications', route: '/applications', command: () => this.router.navigate(['/applications']) },
+                { icon: 'globe', label: 'Applications', route: '/application', command: () => this.router.navigate(['/application']) },
             ]
         }
     ];
