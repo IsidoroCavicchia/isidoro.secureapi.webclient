@@ -1,3 +1,3 @@
 export const environment = {
-    apiUrl : 'https://isidorosecureapi-production.up.railway.app'
+    apiUrl : 'https://localhost:7275'
 };

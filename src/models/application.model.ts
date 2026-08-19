@@ -3,4 +3,11 @@ export interface GetApplicationResponse {
     name: string;
     domain: string;
     isActive: boolean;
+    isOnline: boolean;
+}
+
+export interface CreateApplicationRequest {
+    name: string;
+    domain: string;
+    isActive: boolean;
 }
