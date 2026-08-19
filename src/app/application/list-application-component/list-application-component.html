@@ -1,37 +1,33 @@
 <p-dialog [visible]="dialogVisible()" (visibleChange)="dialogVisible.set($event)" [modal]="true" [closable]="true"
     header="Ajouter une application" [style]="{ width: '400px' }" aria-labelledby="add-application-dialog-title">
-    <form id="add-application-form">
+    <form id="add-application-form" [formGroup]="applicationFormGroup" (ngSubmit)="onSubmitApplication()">
         <div class="flex flex-col gap-4 pt-2">
             <div class="flex flex-col gap-1">
-                <label for="applicationName">Nom de l'application</label> 
-                <input pInputText id="applicationName" type="text" formControlName="applicationName" autocomplete="off" />
+                <label for="applicationName">Nom de l'application</label>
+                <input pInputText id="applicationName" type="text" [formControl]="applicationName" autocomplete="off" />
             </div>
         </div>
         <div class="flex flex-col gap-4 pt-2">
             <div class="flex flex-col gap-1">
-                <label for="applicationDomain">Nom de domain</label> 
-                <input pInputText id="applicationDomain" type="text" formControlName="applicationDomain" autocomplete="off"/>
+                <label for="applicationDomain">Nom de domain</label>
+                <input pInputText id="applicationDomain" type="text" [formControl]="applicationDomain"
+                    autocomplete="off" />
             </div>
         </div>
         <div class="flex flex-col gap-4 pt-2">
             <div class="flex flex-col gap-1">
-                <label for="applicationDescription">Description</label>
-                <textarea pInputTextarea id="applicationDescription" formControlName="applicationDescription" rows="3"></textarea>
-            </div>
-        </div>
-        <div class="flex flex-col gap-4 pt-2">
-            <div class="flex flex-col gap-1">
-                <label for="applicationIsActive">Is Active</label>
-                <p-toggleswitch id="applicationIsActive" formControlName="applicationIsActive" binary="true"></p-toggleswitch>
+                <label for="applicationIsActive">Est active</label>
+                <p-toggleswitch id="applicationIsActive" [formControl]="applicationIsActive"
+                    binary="true" onLabel="Oui" offLabel="Non"></p-toggleswitch>
             </div>
         </div>
     </form>
 
-      <ng-template #footer>
-    <button pButton type="button" label="Annuler" severity="secondary"
-      (click)="dialogVisible.set(false)"><span>Annuler</span></button>
-    <button pButton type="submit" form="add-application-form" label="Confirmer"><span>Confirmer</span></button>
-  </ng-template>
+    <ng-template #footer>
+        <button pButton type="button" label="Annuler" severity="secondary"
+            (click)="dialogVisible.set(false)"><span>Annuler</span></button>
+        <button pButton type="submit" form="add-application-form" label="Confirmer"><span>Confirmer</span></button>
+    </ng-template>
 </p-dialog>
 
 <div class="flex justify-between items-center mb-3">
@@ -41,12 +37,10 @@
 <p-toolbar>
     <div class="grow grid grid-cols-12 gap-4">
         <div class="lg:col-span-4 col-span-5">
-            <input pInputText type="text" placeholder="Nom de l'application" [(ngModel)]="applicationName"
-                class="w-full" />
+            <input pInputText type="text" placeholder="Nom de l'application" [(ngModel)]="searchName" class="w-full" />
         </div>
         <div class="lg:col-span-4 col-span-5">
-            <input pInputText type="text" placeholder="Nom de domain" [(ngModel)]="applicationDomain"
-                class="w-full" />
+            <input pInputText type="text" placeholder="Nom de domain" [(ngModel)]="searchDomain" class="w-full" />
         </div>
     </div>
 </p-toolbar>
@@ -56,8 +50,8 @@
             <tr>
                 <th>Nom</th>
                 <th>Domain</th>
-                <th>Description</th>
-                <th>Is Active</th>
+                <th>Active ?</th>
+                <th>En ligne</th>
                 <th>Action</th>
             </tr>
         </ng-template>
@@ -65,11 +59,23 @@
             <tr>
                 <td>{{application.name}}</td>
                 <td>{{application.domain}}</td>
-                <td>{{application.description}}</td>
-                <td>{{application.isActive}}</td>
+                <td><p-checkbox [binary]="true" [ngModel]="application.isActive" disabled="true"></p-checkbox></td>
                 <td>
-                    <button pButton type="button" icon="pi pi-pencil" class="p-button-rounded p-button-success p-mr-2"></button>
-                    <button pButton type="button" icon="pi pi-trash" class="p-button-rounded p-button-danger"></button>
+                    @if (application.isOnline){
+                        <p-tag severity="success" value="en ligne" class="flex items-center gap-2">
+                            <span class="pi pi-check text-green-500"></span>
+                        </p-tag>
+                    }@else {
+                        <p-tag severity="danger" value="hors ligne" class="flex items-center gap-2">
+                            <span class="pi pi-times text-red-500"></span>
+                        </p-tag>
+                    }
+                </td>
+                <td>
+                    <button pButton type="button"
+                        class="pi p-button-text p-button-secondary !font-bold border-0 bg-transparent cursor-pointer">
+                        <span class="p-button-icon pi pi-pencil"></span>
+                    </button>
                 </td>
             </tr>
         </ng-template>
