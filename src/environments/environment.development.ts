@@ -1,4 +1,4 @@
 export const environment = {
-    apiUrl: 'https://localhost:7275',
-    loginUrl: 'https://localhost:7275/login'
+    apiUrl: 'https://isidorosecureapi-production.up.railway.app/',
+    loginUrl: 'https://isidorosecureapi-production.up.railway.app/login'
 };
