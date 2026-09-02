@@ -8,6 +8,7 @@ import { ButtonModule } from "primeng/button";
 import { AvatarModule } from "primeng/avatar";
 import { filter, map } from "rxjs";
 import { AuthService } from "../services/auth.service";
+import { UserService } from "../services/user.service";
 
 interface NavItem {
     icon: string;
@@ -66,8 +67,13 @@ interface NavGroup {
                         <p-sidebar-menu>
                             <p-sidebar-menu-item>
                                 <button pSidebarMenuButton class="p-1!">
-                                    <p-avatar [label]="userInitials()" shape="circle" class="size-6 shrink-0 text-xs" />
-                                    <span>{{ authService.currentUser() }}</span>
+                                    @if(userService.currentUser()?.image != null){
+                                        <p-avatar [label]="userInitials()" shape="circle" class="size-6 shrink-0 text-xs" 
+                                            [image]="userService.currentUser()?.image" />
+                                    }@else {
+                                        <p-avatar [label]="userInitials()" shape="circle" class="size-6 shrink-0 text-xs" />
+                                    }
+                                    <span>{{ userService.currentUser()?.username }}</span>
                                 </button>
                                 <button pSidebarMenuAction (click)="authService.logout()" aria-label="Se déconnecter">
                                     <svg data-p-icon="sign-out"></svg>
@@ -91,6 +97,7 @@ export class SideBarComponent {
     open = signal(true);
     readonly router = inject(Router);
     readonly authService = inject(AuthService);
+    readonly userService = inject(UserService);
 
     readonly userInitials = computed(() =>
         (this.authService.currentUser() ?? '').slice(0, 2).toUpperCase()

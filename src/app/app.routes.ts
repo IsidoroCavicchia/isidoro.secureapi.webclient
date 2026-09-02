@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Home } from './home/home';
 import { LoginComponent } from './login/login';
+import { CallbackComponent } from './callback/callback';
 import { UserListComponent } from './user/user-list-component/user-list-component';
 import { SideBarComponent } from '../theme/sidebar.component';
 import { authGuard } from './guards/auth.guard';
@@ -10,6 +11,7 @@ import { ListApplicationComponent } from './application/list-application-compone
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
+    { path: 'callback', component: CallbackComponent },
     {
         path: '',
         component: SideBarComponent,

@@ -9,6 +9,7 @@ import { GetLoginResponse, GetUserRequest, GetUserResponse, CreateUserRequest, R
 export class UserService {
     public users = signal<GetUserResponse[]>([]);
     public user = signal<GetUserResponse | null>(null);
+    public currentUser = signal<GetUserResponse | null>(null);
 
     constructor(private readonly http: HttpClient){}
 
@@ -33,10 +34,6 @@ export class UserService {
 
     getUser(id: string){
         return this.http.get<GetUserResponse>(environment.apiUrl + '/api/Account/' + id);
-    }
-
-    login(username: string, password: string){
-        return this.http.post<GetLoginResponse>(environment.apiUrl + '/api/Account/Login?Username=' + username + '&Password=' + password, {});
     }
 
     updateUser(id: string, request: any){

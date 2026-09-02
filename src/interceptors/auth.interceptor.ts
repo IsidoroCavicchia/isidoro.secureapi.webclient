@@ -1,19 +1,19 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { environment } from '../environments/environment';
-
-const LOGIN_URL = `${environment.apiUrl}/api/Account/Login`;
+import { inject } from '@angular/core';
+import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-    if (req.url.startsWith(LOGIN_URL)) {
-        return next(req);
-    }
+    const auth = inject(AuthService);
 
-    const token = localStorage.getItem('auth_token');
+    const token = auth.getAccessToken();
+
     if (!token) {
         return next(req);
     }
 
     return next(req.clone({
-        setHeaders: { Authorization: `Bearer ${token}` }
+        setHeaders: {
+            Authorization: `Bearer ${token}`
+        }
     }));
 };
