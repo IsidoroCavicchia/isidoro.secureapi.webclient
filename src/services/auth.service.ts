@@ -1,74 +1,224 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { tap } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
+import { environment } from '../environments/environment';
 import { UserService } from './user.service';
+import { GetUserResponse } from '../models/user.model';
 
-const TOKEN_KEY = 'auth_token';
-const USERNAME_KEY = 'auth_username';
-const EXPIRY_KEY = 'auth_expiry';
+const RETURN_PATH_KEY = 'oidc_return_path';
+
+interface UserInfo {
+    sub: string;
+    name?: string;
+    preferred_username?: string;
+    email?: string;
+    username?: string;
+    image?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
     private readonly router = inject(Router);
+    private readonly http = inject(HttpClient);
     private readonly userService = inject(UserService);
 
-    private readonly _token = signal<string | null>(localStorage.getItem(TOKEN_KEY));
-    private readonly _username = signal<string | null>(localStorage.getItem(USERNAME_KEY));
-    private readonly _expiry = signal<Date | null>(this.parseStoredDate(localStorage.getItem(EXPIRY_KEY)));
+    private readonly _authenticated = signal<boolean | null>(null);
+    private readonly _username = signal<string | null>(null);
+    private readonly _userId = signal<string | null>(null);
 
+    readonly isAuthenticated = this._authenticated.asReadonly();
     readonly currentUser = this._username.asReadonly();
-    readonly isAuthenticated = computed(() => {
-        const token = this._token();
-        if (!token) return false;
-        const expiry = this._expiry();
-        return !expiry || new Date() <= expiry;
-    });
 
-    login(username: string, password: string) {
-        return this.userService.login(username, password).pipe(
-            tap(response => {
-                if (response.success) {
-                    const expiry = this.decodeJwtExpiry(response.token);
-                    this.storeSession(response.token, response.username, expiry);
-                }
-            })
-        );
+    get userId() {
+        return this._userId();
     }
 
-    logout(): void {
-        this.clearSession();
-        this.router.navigate(['/login']);
+    get user() {
+        return this.userService.currentUser();
     }
 
-    private storeSession(token: string, username: string, expiry: Date | null): void {
-        localStorage.setItem(TOKEN_KEY, token);
-        localStorage.setItem(USERNAME_KEY, username);
-        if (expiry) localStorage.setItem(EXPIRY_KEY, expiry.toISOString());
-        this._token.set(token);
-        this._username.set(username);
-        this._expiry.set(expiry);
-    }
-
-    private clearSession(): void {
-        localStorage.removeItem(TOKEN_KEY);
-        localStorage.removeItem(USERNAME_KEY);
-        localStorage.removeItem(EXPIRY_KEY);
-        this._token.set(null);
-        this._username.set(null);
-        this._expiry.set(null);
-    }
-
-    // Decode exp claim from JWT payload without an external library
-    private decodeJwtExpiry(token: string): Date | null {
+    async checkAuth(): Promise<boolean> {
         try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            return typeof payload.exp === 'number' ? new Date(payload.exp * 1000) : null;
+            const userInfo = await firstValueFrom(
+                this.http.get<UserInfo>(`${environment.apiUrl}/connect/userinfo`)
+            );
+            this._username.set(userInfo.preferred_username ?? userInfo.username ?? null);
+            this._userId.set(userInfo.sub ?? null);
+            this._authenticated.set(true);
+            return true;
         } catch {
-            return null;
+            this._username.set(null);
+            this._authenticated.set(false);
+            return false;
         }
     }
 
-    private parseStoredDate(value: string | null): Date | null {
-        return value ? new Date(value) : null;
+    async startLogin(returnPath: string): Promise<void> {
+        sessionStorage.setItem(RETURN_PATH_KEY, returnPath);
+
+        const callbackUrl = `${window.location.origin}/callback`;
+
+        const codeVerifier = generateRandomString(64);
+
+        const codeChallenge = await createCodeChallenge(codeVerifier);
+
+        sessionStorage.setItem(
+            'pkce_code_verifier',
+            codeVerifier
+        );
+
+        const params = new URLSearchParams({
+            client_id: 'isidoro-spa',
+            redirect_uri: callbackUrl,
+            response_type: 'code',
+            scope: 'openid profile email api username image',
+            code_challenge: codeChallenge,
+            code_challenge_method: 'S256'
+        });
+
+        window.location.href =
+            `${environment.apiUrl}/connect/authorize?${params.toString()}`;
     }
+
+    async exchangeCode(code: string): Promise<void> {
+        const codeVerifier =
+            sessionStorage.getItem('pkce_code_verifier');
+
+        if (!codeVerifier) {
+            throw new Error(
+                'PKCE code_verifier introuvable'
+            );
+        }
+
+        const body = new URLSearchParams();
+
+        body.set(
+            'grant_type',
+            'authorization_code'
+        );
+
+        body.set(
+            'client_id',
+            'isidoro-spa'
+        );
+
+        body.set(
+            'code',
+            code
+        );
+
+        body.set(
+            'redirect_uri',
+            `${window.location.origin}/callback`
+        );
+
+        body.set(
+            'code_verifier',
+            codeVerifier
+        );
+
+        const response = await fetch(
+            `${environment.apiUrl}/connect/token`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: body.toString()
+            }
+        );
+
+        console.log('TOKEN STATUS:', response.status);
+        console.log(
+            'TOKEN HEADERS:',
+            [...response.headers.entries()]
+        );
+
+        const responseText = await response.text();
+
+        console.log('TOKEN RESPONSE:', responseText);
+
+        if (!response.ok) {
+            throw new Error(
+                `Token exchange failed: ${responseText}`
+            );
+        }
+
+        const token = JSON.parse(responseText);
+
+        console.log('TOKEN:', token);
+
+        // À adapter à ton système actuel
+        localStorage.setItem(
+            'access_token',
+            token.access_token
+        );
+
+        if (token.refresh_token) {
+            localStorage.setItem(
+                'refresh_token',
+                token.refresh_token
+            );
+        }
+
+        sessionStorage.removeItem(
+            'pkce_code_verifier'
+        );
+    }
+
+    getReturnPath(): string {
+        const path = sessionStorage.getItem(RETURN_PATH_KEY) ?? '/';
+        sessionStorage.removeItem(RETURN_PATH_KEY);
+        return path;
+    }
+
+    getAccessToken(): string | null {
+        return localStorage.getItem('access_token');
+    }
+
+    async logout(): Promise<void> {
+        try {
+            await firstValueFrom(this.http.get(`${environment.apiUrl}/connect/logout`));
+        } finally {
+            this._authenticated.set(false);
+            this._username.set(null);
+            this.router.navigate(['/login']);
+        }
+    }
+}
+
+function base64UrlEncode(buffer: ArrayBuffer): string {
+    return btoa(
+        String.fromCharCode(...new Uint8Array(buffer))
+    )
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+}
+
+function generateRandomString(length: number): string {
+    const chars =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+
+    const randomValues = new Uint8Array(length);
+    crypto.getRandomValues(randomValues);
+
+    return Array.from(randomValues)
+        .map(x => chars[x % chars.length])
+        .join('');
+}
+
+async function createCodeChallenge(
+    codeVerifier: string
+): Promise<string> {
+
+    const data = new TextEncoder().encode(codeVerifier);
+
+    const digest = await crypto.subtle.digest(
+        'SHA-256',
+        data
+    );
+
+    return base64UrlEncode(digest);
 }

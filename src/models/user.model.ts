@@ -3,6 +3,7 @@ export interface GetLoginResponse{
     message: string;
     username: string;
     token: string;
+    redirectUrl?: string;
 }
 
 export interface GetUserRequest{

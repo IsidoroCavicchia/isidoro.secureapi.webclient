@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { AuthService } from '../../services/auth.service';
+import { environment } from '../../environments/environment';
 
 @Component({
     selector: 'app-login',
@@ -41,13 +41,9 @@ import { AuthService } from '../../services/auth.service';
                             class="w-full"
                         />
                     </div>
-                    @if (error()) {
-                        <p role="alert" class="text-sm text-red-500 text-center">{{ error() }}</p>
-                    }
                     <p-button
                         type="submit"
                         label="Se connecter"
-                        [loading]="loading()"
                         styleClass="w-full mt-2"
                     />
                 </form>
@@ -57,35 +53,34 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LoginComponent {
     private readonly fb = inject(FormBuilder);
-    private readonly authService = inject(AuthService);
-    private readonly router = inject(Router);
+    private readonly route = inject(ActivatedRoute);
+
+    // ReturnUrl is set by OpenIddict when it redirects to this login page
+    private readonly backendReturnUrl = this.route.snapshot.queryParamMap.get('ReturnUrl') ?? '/';
 
     protected readonly form = this.fb.group({
         username: ['', Validators.required],
         password: ['', Validators.required]
     });
 
-    protected readonly error = signal<string | null>(null);
-    protected readonly loading = signal(false);
-
     protected submit(): void {
         if (this.form.invalid) return;
-        this.loading.set(true);
-        this.error.set(null);
         const { username, password } = this.form.value;
-        this.authService.login(username!, password!).subscribe({
-            next: (res) => {
-                this.loading.set(false);
-                if (res.success) {
-                    this.router.navigate(['/']);
-                } else {
-                    this.error.set(res.message || 'Identifiants incorrects.');
-                }
-            },
-            error: () => {
-                this.loading.set(false);
-                this.error.set('Erreur de connexion. Veuillez réessayer.');
-            }
-        });
+
+        // Native form POST avoids CORS on the backend redirect
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `${environment.apiUrl}/login`;
+
+        for (const [name, value] of [['Username', username!], ['Password', password!], ['ReturnUrl', this.backendReturnUrl]] as [string, string][]) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
     }
 }
