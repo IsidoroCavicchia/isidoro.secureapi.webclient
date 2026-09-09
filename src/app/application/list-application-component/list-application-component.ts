@@ -11,6 +11,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { CreateApplicationRequest } from '../../../models/application.model';
 import { TagModule } from 'primeng/tag';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-list-application-component',
@@ -32,6 +33,7 @@ import { TagModule } from 'primeng/tag';
 })
 export class ListApplicationComponent implements OnInit {
   private readonly applicationService = inject(ApplicationService);
+  private readonly router = inject(Router);
   searchName: string = '';
   searchDomain: string = '';
 
@@ -60,6 +62,10 @@ export class ListApplicationComponent implements OnInit {
 
   protected addApplication(): void {
     this.dialogVisible.set(true);
+  }
+
+  protected editApplication(applicationId: string): void {
+    this.router.navigate(['/application', applicationId]);
   }
 
   protected onSubmitApplication(): void {
