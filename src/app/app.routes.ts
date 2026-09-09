@@ -8,6 +8,7 @@ import { authGuard } from './guards/auth.guard';
 import { CreateUserComponent } from './user/create-user-component/create-user-component';
 import { UpdateUserComponent } from './user/update-user-component/update-user-component';
 import { ListApplicationComponent } from './application/list-application-component/list-application-component';
+import { EditApplicationComponent } from './application/edit-application-component/edit-application-component';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent },
@@ -22,6 +23,7 @@ export const routes: Routes = [
             { path: 'user/create', component: CreateUserComponent },
             { path: 'user/:id', component: UpdateUserComponent },
             { path: 'application', component: ListApplicationComponent },
+            { path: 'application/:id', component: EditApplicationComponent },
         ],
     },
     { path: '**', redirectTo: '' }

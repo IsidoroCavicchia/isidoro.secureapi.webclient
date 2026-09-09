@@ -73,7 +73,9 @@
                 </td>
                 <td>
                     <button pButton type="button"
-                        class="pi p-button-text p-button-secondary !font-bold border-0 bg-transparent cursor-pointer">
+                        class="pi p-button-text p-button-secondary !font-bold border-0 bg-transparent cursor-pointer"
+                        (click)="editApplication(application.id)"
+                        aria-label="Modifier l'application">
                         <span class="p-button-icon pi pi-pencil"></span>
                     </button>
                 </td>

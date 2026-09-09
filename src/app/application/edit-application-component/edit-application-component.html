@@ -1,0 +1,108 @@
+<p-toast />
+
+<div class="application-edit-shell">
+  <div class="application-edit-header">
+    <div>
+      <p class="eyebrow">Application</p>
+      <h2>Modifier l'application</h2>
+    </div>
+    <button pButton type="button" severity="secondary" (click)="onCancel()">
+      <span class="pi pi-arrow-left"></span>
+      <span>Retour</span>
+    </button>
+  </div>
+
+  <p-card>
+    <form [formGroup]="applicationForm" (ngSubmit)="onSubmit()" class="application-edit-form">
+      <fieldset [disabled]="loading()" class="form-grid">
+        <div class="field-block field-wide">
+          <label for="applicationName">Nom de l'application</label>
+          <input
+            pInputText
+            id="applicationName"
+            type="text"
+            [formControl]="nameFormControl"
+            autocomplete="off"
+            [class]="'w-full' + (nameFormControl.invalid && nameFormControl.touched ? ' ng-invalid ng-dirty' : '')"
+          />
+          @if (nameFormControl.hasError('required') && nameFormControl.touched) {
+            <small class="text-red-500">Le nom est requis.</small>
+          }
+        </div>
+
+        <div class="field-block field-wide">
+          <label for="applicationDomain">Nom de domaine</label>
+          <input
+            pInputText
+            id="applicationDomain"
+            type="text"
+            [formControl]="domainFormControl"
+            autocomplete="off"
+            [class]="'w-full' + (domainFormControl.invalid && domainFormControl.touched ? ' ng-invalid ng-dirty' : '')"
+          />
+          @if (domainFormControl.hasError('required') && domainFormControl.touched) {
+            <small class="text-red-500">Le domaine est requis.</small>
+          }
+        </div>
+
+        <div class="field-block status-block">
+          <label for="applicationIsActive">Statut</label>
+          <div class="status-control">
+            <p-toggleswitch id="applicationIsActive" [formControl]="isActiveFormControl" />
+            <span>{{ isActiveFormControl.value ? 'Active' : 'Inactive' }}</span>
+          </div>
+        </div>
+
+        <div class="field-block field-wide users-block">
+          <div class="users-label-row">
+            <label for="applicationUsers">Utilisateurs autorisés</label>
+            <span>{{ selectedUserCount() }} sélectionné(s)</span>
+          </div>
+          <p-select
+            inputId="applicationUsers"
+            [options]="userOptions()"
+            optionLabel="username"
+            optionValue="id"
+            [formControl]="userIdsFormControl"
+            [multiple]="true"
+            [filter]="true"
+            filterBy="username,email"
+            placeholder="Ajouter des utilisateurs"
+            emptyMessage="Aucun utilisateur disponible"
+            emptyFilterMessage="Aucun utilisateur trouvé"
+            scrollHeight="280px"
+            styleClass="w-full"
+          >
+            <ng-template #item let-user>
+              <div class="user-option">
+                <span class="user-avatar">
+                  @if (user.image) {
+                    <img [src]="user.image" [alt]="'Profil de ' + user.username" />
+                  } @else {
+                    <span>{{ user.username.charAt(0).toUpperCase() }}</span>
+                  }
+                </span>
+                <span>
+                  <strong>{{ user.username }}</strong>
+                  @if (user.email) {
+                    <small>{{ user.email }}</small>
+                  }
+                </span>
+              </div>
+            </ng-template>
+          </p-select>
+        </div>
+      </fieldset>
+
+      <div class="form-actions">
+        <button pButton type="button" severity="secondary" (click)="onCancel()">
+          <span>Annuler</span>
+        </button>
+        <button pButton type="submit" [disabled]="loading()">
+          <span class="pi pi-save"></span>
+          <span>Enregistrer</span>
+        </button>
+      </div>
+    </form>
+  </p-card>
+</div>
